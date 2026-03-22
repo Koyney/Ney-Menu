@@ -24,7 +24,7 @@ except ImportError:
     tty = termios = select = None
 
 
-VERSION = "1.2"
+VERSION = "1.3"
 
 # ── Noms de fichiers et URLs ──────────────────────────────────────────────────
 COFLIX_FILE = "Co-flix.py"
@@ -51,8 +51,14 @@ def _base_dir():
     return os.path.dirname(os.path.abspath(__file__))
 
 def _py_dir():
-    """Sous-dossier 'py' a cote de Co-Menu.py."""
-    d = os.path.join(_base_dir(), "py")
+    """Dossier de stockage des scripts :
+    Windows : %LOCALAPPDATA%/CoTEAM/Co-Menu
+    Linux/macOS/Termux : ~/.local/share/CoTEAM/Co-Menu"""
+    if os.name == "nt":
+        local = os.environ.get("LOCALAPPDATA") or os.path.join(os.path.expanduser("~"), "AppData", "Local")
+        d = os.path.join(local, "CoTEAM", "Co-Menu")
+    else:
+        d = os.path.join(os.path.expanduser("~"), ".local", "share", "CoTEAM", "Co-Menu")
     os.makedirs(d, exist_ok=True)
     return d
 
@@ -332,7 +338,8 @@ def _rename_if_needed(folder, src_name, dst_name):
 
 
 def _ensure_scripts():
-    """Verifie la presence des scripts dans ./py/ ; telecharge et renomme si necessaire."""
+    """Verifie la presence des scripts dans ./py/ ; telecharge et renomme si necessaire.
+    Les scripts sans URL (ex: Co-flix) sont signales comme manquants mais pas telecharges."""
     py = _py_dir()
 
     # Renommages preventifs (fichiers deja presents sous un autre nom)
@@ -347,9 +354,8 @@ def _ensure_scripts():
     cochan_path = os.path.join(py, COCHAN_FILE)
     cotube_path = os.path.join(py, COTUBE_FILE)
 
+    # Scripts manquants avec une URL de telechargement disponible
     missing = []
-    if not os.path.isfile(coflix_path):
-        missing.append(("Co-flix", COFLIX_URL, coflix_path))
     if not os.path.isfile(cochan_path):
         missing.append(("Co-chan", COCHAN_URL, cochan_path))
     if not os.path.isfile(cotube_path):
@@ -358,7 +364,7 @@ def _ensure_scripts():
     if not missing:
         return True
 
-    # Ecran de telechargement
+    # Ecran de telechargement pour les scripts avec URL
     ConsoleUI.clear()
     ConsoleUI._print_banner()
     print(ConsoleUI.CYAN + "\n  " + "="*58 + ConsoleUI.RESET)
@@ -374,8 +380,6 @@ def _ensure_scripts():
     # Renommage post-telechargement
     for alias in ("Anime-dowload.py", "Anime-download.py"):
         _rename_if_needed(py, alias, COCHAN_FILE)
-    for alias in ("get.php", "coflix.py"):
-        _rename_if_needed(py, alias, COFLIX_FILE)
 
     if not all_ok:
         ConsoleUI.warn("Certains fichiers n'ont pas pu etre telecharges.")
@@ -385,6 +389,41 @@ def _ensure_scripts():
             pass
 
     return all_ok
+
+
+def _update_scripts():
+    """Telecharge la derniere version des scripts mis a jour (ceux ayant une URL).
+    Co-flix est exclu car il n'a pas d'URL de telechargement."""
+    py = _py_dir()
+
+    # Liste des scripts pouvant etre mis a jour automatiquement
+    updatable = [
+        ("Co-chan", COCHAN_URL, os.path.join(py, COCHAN_FILE)),
+        ("Co-tube", COTUBE_URL, os.path.join(py, COTUBE_FILE)),
+    ]
+
+    ConsoleUI.clear()
+    ConsoleUI._print_banner()
+    print(ConsoleUI.CYAN + "\n  " + "="*58 + ConsoleUI.RESET)
+    print(f"  {ConsoleUI.BOLD}  Mise a jour des scripts{ConsoleUI.RESET}")
+    print(ConsoleUI.CYAN + "  " + "="*58 + ConsoleUI.RESET)
+    print(f"\n  {ConsoleUI.DIM}Co-flix.py doit etre mis a jour manuellement.{ConsoleUI.RESET}\n")
+
+    all_ok = True
+    for label, url, dest in updatable:
+        ok = _download_file(url, dest, label)
+        if not ok:
+            all_ok = False
+
+    if all_ok:
+        print(f"\n  {ConsoleUI.GREEN}ok  Mise a jour terminee avec succes !{ConsoleUI.RESET}")
+    else:
+        ConsoleUI.warn("Certains fichiers n'ont pas pu etre mis a jour.")
+
+    try:
+        input(f"\n  {ConsoleUI.DIM}Appuyez sur Entree pour continuer...{ConsoleUI.RESET}")
+    except (EOFError, OSError):
+        pass
 
 
 # ── Lancement des scripts ─────────────────────────────────────────────────────
@@ -402,126 +441,17 @@ def _launch(filename, module_name):
     module.main()
 
 
-# ── Écrans d'avertissement ────────────────────────────────────────────────────
-def _confirm_script(script_name, launch_label):
-    """Affiche un avertissement source externe générique.
-    script_name  : nom affiché du fichier (ex: 'Co-flix.py')
-    launch_label : texte du bouton de confirmation (ex: 'Lancer Co-flix')
-    Retourne True si l'utilisateur confirme, False sinon."""
-    warning_lines = [
-        f"  {ConsoleUI.YELLOW}!  {ConsoleUI.RESET}{ConsoleUI.BOLD}{script_name}{ConsoleUI.RESET} est un script tiers, heberge",
-        f"     et maintenu en dehors de ce projet.",
-        f"",
-        f"  {ConsoleUI.DIM}  Son contenu peut etre modifie a tout moment par",
-        f"     son auteur. Avant de le lancer, assurez-vous",
-        f"     que le fichier present sur votre machine",
-        f"     provient d'une source en laquelle vous avez",
-        f"     confiance.{ConsoleUI.RESET}",
-    ]
-
-    options = [
-        f"\u2714  Je comprends -- {launch_label}",
-        "\u2190  Retour au menu principal",
-    ]
-
-    if _is_termux():
-        while True:
-            ConsoleUI.clear()
-            ConsoleUI._print_banner()
-            print(ConsoleUI.CYAN + "\n  " + "="*58 + ConsoleUI.RESET)
-            print(f"  {ConsoleUI.BOLD}{ConsoleUI.YELLOW}  Avertissement -- Source externe{ConsoleUI.RESET}")
-            print(ConsoleUI.CYAN + "  " + "="*58 + ConsoleUI.RESET)
-            print()
-            for line in warning_lines:
-                print(line)
-            print()
-            print(ConsoleUI.CYAN + "  " + "-"*58 + ConsoleUI.RESET)
-            print(f"\n  {ConsoleUI.CYAN}{ConsoleUI.BOLD}[1]{ConsoleUI.RESET}  {options[0]}")
-            print(f"  {ConsoleUI.CYAN}{ConsoleUI.BOLD}[0]{ConsoleUI.RESET}  {ConsoleUI.DIM}{options[1]}{ConsoleUI.RESET}")
-            print(f"\n{ConsoleUI.CYAN}  {'-'*58}{ConsoleUI.RESET}")
-            try:
-                raw = input(f"  {ConsoleUI.YELLOW}>  {ConsoleUI.RESET}Choix : ").strip()
-            except (EOFError, OSError):
-                return False
-            if raw == "1":
-                return True
-            if raw in ("0", ""):
-                return False
-    else:
-        selected = 0
-        box_w = 62
-        while True:
-            ConsoleUI.clear()
-            ConsoleUI._print_banner()
-
-            print(ConsoleUI.CYAN + "\n  " + "="*58 + ConsoleUI.RESET)
-            print(f"  {ConsoleUI.BOLD}{ConsoleUI.YELLOW}  !! Avertissement -- Source externe !!{ConsoleUI.RESET}")
-            print(ConsoleUI.CYAN + "  " + "="*58 + ConsoleUI.RESET)
-            print()
-            for line in warning_lines:
-                print(line)
-            print()
-
-            h_line      = "=" * box_w
-            title       = "CONFIRMATION"
-            title_vlen  = ConsoleUI.display_len(title)
-            title_pad_l = max(0, (box_w - title_vlen) // 2)
-            title_pad_r = max(0, box_w - title_vlen - title_pad_l)
-            print(f"  +{h_line}+")
-            print(f"  |{' ' * title_pad_l}{ConsoleUI.BOLD}{ConsoleUI.CYAN}{title}{ConsoleUI.RESET}{' ' * title_pad_r}|")
-            print(f"  +{h_line}+")
-            print(f"  |{' ' * box_w}|")
-
-            inner = box_w - 4
-            for i, opt in enumerate(options):
-                prefix       = ">  " if i == selected else "   "
-                visible_text = prefix + opt
-                pad_r        = " " * max(0, inner - ConsoleUI.display_len(visible_text))
-                if i == selected:
-                    print(f"  |  {ConsoleUI.CYAN}{ConsoleUI.BOLD}{visible_text}{ConsoleUI.RESET}{pad_r}  |")
-                else:
-                    print(f"  |  {visible_text}{pad_r}  |")
-
-            print(f"  |{' ' * box_w}|")
-            nav     = "haut/bas: Naviguer   Entree: Valider   Echap: Retour"
-            nav_pad = " " * max(0, box_w - 2 - ConsoleUI.display_len(nav))
-            print(f"  +{h_line}+")
-            print(f"  |  {ConsoleUI.YELLOW}{nav}{ConsoleUI.RESET}{nav_pad}|")
-            print(f"  +{h_line}+")
-
-            while True:
-                key = ConsoleUI.get_key()
-                if key:
-                    break
-                time.sleep(0.03)
-
-            if key == 'UP':
-                selected = (selected - 1) % len(options)
-            elif key == 'DOWN':
-                selected = (selected + 1) % len(options)
-            elif key == 'ENTER':
-                return selected == 0
-            elif key == 'ESC':
-                return False
-
-
 def launch_coflix():
-    if not _confirm_script(COFLIX_FILE, "Lancer Co-flix"):
-        return
     _launch(COFLIX_FILE, "coflix")
     _cleanup_pycache()
 
 
 def launch_cochan():
-    if not _confirm_script(COCHAN_FILE, "Lancer Co-chan"):
-        return
     _launch(COCHAN_FILE, "cochan")
     _cleanup_pycache()
 
 
 def launch_cotube():
-    if not _confirm_script(COTUBE_FILE, "Lancer Co-tube"):
-        return
     _launch(COTUBE_FILE, "cotube")
     _cleanup_pycache()
 
@@ -564,6 +494,30 @@ def main():
 
     # Verification / telechargement des scripts au demarrage
     _ensure_scripts()
+
+    # Proposition de mise a jour
+    if _is_termux():
+        ConsoleUI.clear()
+        ConsoleUI._print_banner()
+        print(f"\n  {ConsoleUI.CYAN}i  {ConsoleUI.RESET}Voulez-vous mettre a jour les scripts ?")
+        print(f"  {ConsoleUI.DIM}(Co-chan et Co-tube — Co-flix est exclu){ConsoleUI.RESET}")
+        print(f"\n  {ConsoleUI.CYAN}{ConsoleUI.BOLD}[1]{ConsoleUI.RESET}  Oui, mettre a jour")
+        print(f"  {ConsoleUI.CYAN}{ConsoleUI.BOLD}[0]{ConsoleUI.RESET}  Non, continuer\n")
+        try:
+            raw = input(f"  {ConsoleUI.YELLOW}>  {ConsoleUI.RESET}Choix : ").strip()
+            if raw == "1":
+                _update_scripts()
+        except (EOFError, OSError):
+            pass
+    else:
+        upd = ConsoleUI.navigate(
+            ["⬇️   Oui, mettre a jour Co-chan et Co-tube",
+             "▶   Non, continuer"],
+            "MISE A JOUR",
+            subtitle="Co-flix doit etre mis a jour manuellement",
+        )
+        if upd == 0:
+            _update_scripts()
 
     while True:
         choice = ConsoleUI.navigate([
