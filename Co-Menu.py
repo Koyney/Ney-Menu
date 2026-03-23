@@ -815,8 +815,18 @@ def _self_update() -> None:
 
     # ── Téléchargement complet du fichier distant ─────────────────────────────
     try:
+        # Paramètre aléatoire pour contourner le cache CDN de GitHub
+        import random
+        cache_bust = random.randint(100000, 999999)
+        url_nocache = f"{URL_COMENU}?cb={cache_bust}"
         req = urllib.request.Request(
-            URL_COMENU, headers={"User-Agent": "curl/termux", "Accept": "text/plain"}
+            url_nocache,
+            headers={
+                "User-Agent": "curl/termux",
+                "Accept": "text/plain",
+                "Cache-Control": "no-cache, no-store",
+                "Pragma": "no-cache",
+            }
         )
         with urllib.request.urlopen(req, timeout=15) as resp:
             if resp.status != 200:
