@@ -792,12 +792,17 @@ def _update_scripts() -> None:
 def _self_update() -> None:
     """Télécharge TOUJOURS le contenu de Co-Menu.py depuis GitHub au démarrage.
 
-    Compare le contenu distant octet-par-octet (hash SHA-256) avec le fichier
-    local. Si identiques : on continue. Si différents : on écrase et on relance.
+    Compare le contenu distant (hash SHA-256) avec le fichier local.
+    Si identiques : on continue. Si différents : on écrase et on relance.
     En cas d'échec réseau : on démarre quand même sans bloquer.
+
+    Note : utilise subprocess + sys.exit pour le relancement afin d'éviter
+    les problèmes de os.execv avec des chemins contenant des espaces (Windows).
     """
     import urllib.request
+    import urllib.error
     import hashlib
+    import subprocess
 
     current_path = os.path.abspath(__file__)
 
@@ -805,18 +810,29 @@ def _self_update() -> None:
     ConsoleUI.print_banner()
     print(
         f"\n  {ConsoleUI.CYAN}i  {ConsoleUI.RESET}"
-        "Mise à jour de Co-Menu.py depuis GitHub...\n"
+        "Vérification de Co-Menu.py depuis GitHub...\n"
     )
 
     # ── Téléchargement complet du fichier distant ─────────────────────────────
     try:
         req = urllib.request.Request(
-            URL_COMENU, headers={"User-Agent": "curl/termux"}
+            URL_COMENU, headers={"User-Agent": "curl/termux", "Accept": "text/plain"}
         )
         with urllib.request.urlopen(req, timeout=15) as resp:
+            if resp.status != 200:
+                raise ValueError(f"HTTP {resp.status}")
             remote_content = resp.read()
     except Exception as exc:  # pylint: disable=broad-except
         ConsoleUI.warn(f"Impossible de joindre GitHub : {exc}")
+        ConsoleUI.info("Démarrage avec la version locale.")
+        time.sleep(1)
+        return
+
+    # Sanity-check : le fichier doit faire au moins 5 Ko (protection anti-page HTML)
+    if len(remote_content) < 5000:
+        ConsoleUI.warn(
+            f"Réponse suspecte ({len(remote_content)} o) — mise à jour annulée."
+        )
         ConsoleUI.info("Démarrage avec la version locale.")
         time.sleep(1)
         return
@@ -860,8 +876,9 @@ def _self_update() -> None:
     )
     time.sleep(1)
 
-    # Relance le processus avec le script fraîchement écrit
-    os.execv(sys.executable, [sys.executable, current_path] + sys.argv[1:])
+    # Relance via subprocess (compatible chemins avec espaces sur Windows)
+    subprocess.Popen([sys.executable, current_path] + sys.argv[1:])
+    sys.exit(0)
 
 
 # ══════════════════════════════════════════════════════════════════════════════
