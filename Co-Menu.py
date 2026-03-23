@@ -789,66 +789,68 @@ def _update_scripts() -> None:
 # ══════════════════════════════════════════════════════════════════════════════
 #  Auto-mise à jour de Co-Menu.py au démarrage
 # ══════════════════════════════════════════════════════════════════════════════
-def _self_update_if_needed() -> None:
-    """Vérifie si Co-Menu.py est à jour ; se met à jour et se relance si non.
+def _self_update() -> None:
+    """Télécharge TOUJOURS le contenu de Co-Menu.py depuis GitHub au démarrage.
 
-    La comparaison se fait sur la taille distante (Content-Length).
-    Si une nouvelle version est détectée :
-      1. On télécharge la nouvelle version dans le fichier actuellement exécuté.
-      2. On relance le processus avec os.execv afin que la nouvelle version
-         prenne immédiatement effet (pas de double instance).
+    Compare le contenu distant octet-par-octet (hash SHA-256) avec le fichier
+    local. Si identiques : on continue. Si différents : on écrase et on relance.
+    En cas d'échec réseau : on démarre quand même sans bloquer.
     """
     import urllib.request
+    import hashlib
 
-    # Chemin réel du fichier en cours d'exécution
     current_path = os.path.abspath(__file__)
 
     ConsoleUI.clear()
     ConsoleUI.print_banner()
     print(
         f"\n  {ConsoleUI.CYAN}i  {ConsoleUI.RESET}"
-        f"Vérification de Co-Menu.py...  "
-        f"{ConsoleUI.DIM}(v{VERSION}){ConsoleUI.RESET}\n"
+        "Mise à jour de Co-Menu.py depuis GitHub...\n"
     )
 
-    # ── Taille distante ───────────────────────────────────────────────────────
+    # ── Téléchargement complet du fichier distant ─────────────────────────────
     try:
         req = urllib.request.Request(
-            URL_COMENU, method="HEAD", headers={"User-Agent": "curl/termux"}
+            URL_COMENU, headers={"User-Agent": "curl/termux"}
         )
-        with urllib.request.urlopen(req, timeout=10) as resp:
-            remote_size = int(resp.headers.get("Content-Length", 0) or 0)
-    except Exception:  # pylint: disable=broad-except
-        remote_size = 0
-
-    if remote_size <= 0:
-        ConsoleUI.info("Impossible de joindre GitHub — démarrage sans vérification.")
+        with urllib.request.urlopen(req, timeout=15) as resp:
+            remote_content = resp.read()
+    except Exception as exc:  # pylint: disable=broad-except
+        ConsoleUI.warn(f"Impossible de joindre GitHub : {exc}")
+        ConsoleUI.info("Démarrage avec la version locale.")
         time.sleep(1)
         return
 
-    local_size = os.path.getsize(current_path) if os.path.isfile(current_path) else -1
+    # ── Comparaison par hash SHA-256 ──────────────────────────────────────────
+    remote_hash = hashlib.sha256(remote_content).hexdigest()
 
-    if abs(remote_size - local_size) <= 1:
+    if os.path.isfile(current_path):
+        with open(current_path, "rb") as fh:
+            local_hash = hashlib.sha256(fh.read()).hexdigest()
+    else:
+        local_hash = ""
+
+    if remote_hash == local_hash:
         ConsoleUI.success(
-            f"Co-Menu.py est à jour  {ConsoleUI.DIM}({local_size} o){ConsoleUI.RESET}"
+            f"Co-Menu.py est à jour  "
+            f"{ConsoleUI.DIM}({len(remote_content)} o){ConsoleUI.RESET}"
         )
         time.sleep(0.8)
         return
 
-    # ── Mise à jour nécessaire ────────────────────────────────────────────────
-    delta = remote_size - local_size
-    sign  = "+" if delta > 0 else ""
+    # ── Contenu différent : on écrase et on relance ───────────────────────────
     ConsoleUI.info(
-        f"Nouvelle version détectée  "
-        f"{ConsoleUI.DIM}{local_size} o → {remote_size} o "
-        f"({sign}{delta} o){ConsoleUI.RESET}"
+        f"Nouvelle version détectée — mise à jour en cours...  "
+        f"{ConsoleUI.DIM}({len(remote_content)} o){ConsoleUI.RESET}"
     )
-    print()
-
-    ok = _download_file(URL_COMENU, current_path, "Co-Menu.py", force=True)
-
-    if not ok:
-        ConsoleUI.warn("Mise à jour échouée — démarrage avec la version actuelle.")
+    try:
+        parent = os.path.dirname(current_path)
+        if parent:
+            os.makedirs(parent, exist_ok=True)
+        with open(current_path, "wb") as fh:
+            fh.write(remote_content)
+    except Exception as exc:  # pylint: disable=broad-except
+        ConsoleUI.warn(f"Impossible d'écrire le fichier : {exc}")
         time.sleep(2)
         return
 
@@ -858,7 +860,7 @@ def _self_update_if_needed() -> None:
     )
     time.sleep(1)
 
-    # Relance le processus courant avec le script mis à jour
+    # Relance le processus avec le script fraîchement écrit
     os.execv(sys.executable, [sys.executable, current_path] + sys.argv[1:])
 
 
@@ -950,7 +952,7 @@ def main() -> None:
         sys.stdout.flush()
 
     # 0. Auto-mise à jour de Co-Menu.py (se relance si nouvelle version trouvée)
-    _self_update_if_needed()
+    _self_update()
 
     # 1. Installation des scripts manquants
     _ensure_scripts()
