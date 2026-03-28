@@ -13,7 +13,7 @@
 ╚══════════════════════════════════════════════════════════════════╝
 ```
 
-### Téléchargeur Anime VF & VOSTFR — Multi-Serveurs
+### Téléchargeur Menu (Co-XXX)
 
 [![Python](https://img.shields.io/badge/Python-3.x-blue?style=for-the-badge&logo=python&logoColor=white)](https://www.python.org/)
 [![Plateforme](https://img.shields.io/badge/Plateforme-Windows%20|%20Android-green?style=for-the-badge&logo=windows)](https://github.com/Bicode-dev/Co-Menu/)
