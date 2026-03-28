@@ -1,7 +1,7 @@
-"""CO-MENU — Lance CO-FLIX, CO-CHAN, CO-SAMA et CO-TUBE.
+"""NEY-MENU — Lance CO-FLIX (optionnel) et NEY-TUBE.
 
-Les scripts sont stockés dans le dossier CoTEAM et téléchargés/mis à
-jour automatiquement depuis GitHub. Co-Menu.py lui-même peut aussi se
+Les scripts sont stockés dans le dossier Koyney/Ney-Menu et téléchargés/mis à
+jour automatiquement depuis GitHub. Ney-Menu.py lui-même peut aussi se
 mettre à jour via le menu Mise à jour.
 
 Compatibilité :
@@ -40,24 +40,19 @@ except ImportError:
 VERSION = "2.2"
 
 # ── URLs de téléchargement ────────────────────────────────────────────────────
-URL_COMENU = (
-    "https://raw.githubusercontent.com/Bicode-dev/Co-Menu"
+URL_NEYMENU = (
+    "https://raw.githubusercontent.com/Koyney/Co-Menu"
     "/refs/heads/main/Co-Menu.py"
+    "?token=GHSAT0AAAAAADYIOV37INIHRX5NTRYP37XK2OIIHXA"
 )
-URL_COCHAN = (
-    "https://raw.githubusercontent.com/Bicode-dev/anime_Co-Chan_download"
-    "/refs/heads/main/Co-chan.py"
-)
-URL_COTUBE = "https://raw.githubusercontent.com/Bicode-dev/Co-tube/main/Co-tube.py"
-URL_COSAMA = (
-    "https://raw.githubusercontent.com/Bicode-dev/Scan_Co-Sama_download"
-    "/refs/heads/main/CO-SAMA.py"
+URL_COTUBE = (
+    "https://raw.githubusercontent.com/Koyney/Co-tube"
+    "/refs/heads/main/Co-tube.py"
+    "?token=GHSAT0AAAAAADYIOV366DC6GY74OQMYFXMC2OIIHDA"
 )
 
 # ── Noms des scripts enfants ──────────────────────────────────────────────────
 COFLIX_FILE = "Co-flix.py"
-COCHAN_FILE = "Co-chan.py"
-COSAMA_FILE = "Co-sama.py"
 COTUBE_FILE = "Co-tube.py"
 
 # ── Cache réseau (url -> (taille_octets, timestamp)) ─────────────────────────
@@ -80,35 +75,35 @@ def _is_termux() -> bool:
 
 # ── Chemins selon la plateforme ───────────────────────────────────────────────
 def _comenu_install_path() -> str:
-    """Retourne le chemin d'installation de Co-Menu.py.
+    """Retourne le chemin d'installation de Ney-Menu.py.
 
-    - Windows          : %LOCALAPPDATA%\\CoTEAM\\Co-Menu.py
-    - Linux/Mac/Termux : ~/.local/share/CoTEAM/Co-Menu.py
+    - Windows          : %LOCALAPPDATA%\\Koyney\\Ney-Menu\\Ney-Menu.py
+    - Linux/Mac/Termux : ~/.local/share/Koyney/Ney-Menu/Ney-Menu.py
     """
     if os.name == "nt":
         local = os.environ.get("LOCALAPPDATA") or os.path.join(
             os.path.expanduser("~"), "AppData", "Local"
         )
-        return os.path.join(local, "CoTEAM", "Co-Menu.py")
+        return os.path.join(local, "Koyney", "Ney-Menu", "Ney-Menu.py")
     return os.path.join(
-        os.path.expanduser("~"), ".local", "share", "CoTEAM", "Co-Menu.py"
+        os.path.expanduser("~"), ".local", "share", "Koyney", "Ney-Menu", "Ney-Menu.py"
     )
 
 
 def _py_dir() -> str:
     """Retourne le dossier de stockage des scripts enfants (créé si absent).
 
-    - Windows          : %LOCALAPPDATA%\\CoTEAM\\Co-Menu\\
-    - Linux/Mac/Termux : ~/.local/share/CoTEAM/Co-Menu/
+    - Windows          : %LOCALAPPDATA%\\Koyney\\Ney-Menu\\
+    - Linux/Mac/Termux : ~/.local/share/Koyney/Ney-Menu/
     """
     if os.name == "nt":
         local = os.environ.get("LOCALAPPDATA") or os.path.join(
             os.path.expanduser("~"), "AppData", "Local"
         )
-        directory = os.path.join(local, "CoTEAM", "Co-Menu")
+        directory = os.path.join(local, "Koyney", "Ney-Menu")
     else:
         directory = os.path.join(
-            os.path.expanduser("~"), ".local", "share", "CoTEAM", "Co-Menu"
+            os.path.expanduser("~"), ".local", "share", "Koyney", "Ney-Menu"
         )
     os.makedirs(directory, exist_ok=True)
     return directory
@@ -173,18 +168,18 @@ class ConsoleUI:
     # ── Banniere ASCII ────────────────────────────────────────────────────────
     @staticmethod
     def print_banner() -> None:
-        """Affiche la banniere CO-MENU."""
+        """Affiche la banniere NEY-MENU."""
         print(
             ConsoleUI.CYAN
             + r"""
-╔══════════════════════════════════════════════════════════════════╗
-║    ██████╗ ██████╗       ███╗   ███╗███████╗███╗   ██╗██╗   ██╗  ║
-║   ██╔════╝██╔═══██╗      ████╗ ████║██╔════╝████╗  ██║██║   ██║  ║
-║   ██║     ██║   ██║█████╗██╔████╔██║█████╗  ██╔██╗ ██║██║   ██║  ║
-║   ██║     ██║   ██║╚════╝██║╚██╔╝██║██╔══╝  ██║╚██╗██║██║   ██║  ║
-║   ╚██████╗╚██████╔╝      ██║ ╚═╝ ██║███████╗██║ ╚████║╚██████╔╝  ║
-║    ╚═════╝ ╚═════╝       ╚═╝     ╚═╝╚══════╝╚═╝  ╚═══╝ ╚═════╝   ║
-╚══════════════════════════════════════════════════════════════════╝"""
+╔════════════════════════════════════════════════════════════════════════════╗
+║  ███╗   ██╗███████╗██╗   ██╗      ███╗   ███╗███████╗███╗   ██╗██╗   ██╗   ║
+║  ████╗  ██║██╔════╝╚██╗ ██╔╝      ████╗ ████║██╔════╝████╗  ██║██║   ██║   ║
+║  ██╔██╗ ██║█████╗   ╚████╔╝ █████╗██╔████╔██║█████╗  ██╔██╗ ██║██║   ██║   ║
+║  ██║╚██╗██║██╔══╝    ╚██╔╝  ╚════╝██║╚██╔╝██║██╔══╝  ██║╚██╗██║██║   ██║   ║
+║  ██║ ╚████║███████╗   ██║         ██║ ╚═╝ ██║███████╗██║ ╚████║╚██████╔╝   ║
+║  ╚═╝  ╚═══╝╚══════╝   ╚═╝         ╚═╝     ╚═╝╚══════╝╚═╝  ╚═══╝ ╚═════╝    ║
+╚════════════════════════════════════════════════════════════════════════════╝"""
             + ConsoleUI.RESET
         )
 
@@ -367,7 +362,7 @@ class ConsoleUI:
         C = ConsoleUI
         C.clear()
         print(f"{C.CYAN}\n  {'═' * 44}{C.RESET}")
-        print(f"  {C.BOLD}{C.CYAN}CO-MENU  v{VERSION}  ·  {title}{C.RESET}")
+        print(f"  {C.BOLD}{C.CYAN}NEY-MENU  v{VERSION}  ·  {title}{C.RESET}")
         if subtitle:
             print(f"  {C.DIM}{subtitle}{C.RESET}")
         print(f"{C.CYAN}  {'═' * 44}{C.RESET}")
@@ -608,11 +603,9 @@ def _compute_one_status(
     """Calcule le statut d'un script et retourne (label, badge, couleur)."""
     C = ConsoleUI
 
-    # Co-flix : pas d'URL, on verifie seulement la presence
+    # Co-flix : pas d'URL, on vérifie seulement la présence (appelé uniquement si présent)
     if url is None:
-        if os.path.isfile(path):
-            return (label, "* Manuel ", C.DIM)
-        return (label, "x Absent  ", C.RED)
+        return (label, "* Present ", C.GREEN)
 
     # Scripts avec URL
     if not os.path.isfile(path):
@@ -651,12 +644,15 @@ def _refresh_status(silent: bool = False) -> None:
         )
 
     py = _py_dir()
-    scripts = [
-        ("Co-chan.py",  os.path.join(py, COCHAN_FILE),  URL_COCHAN),
-        ("Co-sama.py", os.path.join(py, COSAMA_FILE), URL_COSAMA),
-        ("Co-tube.py", os.path.join(py, COTUBE_FILE),  URL_COTUBE),
-        ("Co-flix.py", os.path.join(py, COFLIX_FILE),  None),
+
+    scripts: list[tuple[str, str, str | None]] = [
+        ("Co-tube.py", os.path.join(py, COTUBE_FILE), URL_COTUBE),
     ]
+
+    # Co-flix : uniquement si le fichier est présent
+    coflix_path = os.path.join(py, COFLIX_FILE)
+    if os.path.isfile(coflix_path):
+        scripts.append(("Co-flix.py", coflix_path, None))
 
     _SCRIPT_STATUSES = [
         _compute_one_status(lbl, path, url) for lbl, path, url in scripts
@@ -683,18 +679,12 @@ def _ensure_scripts() -> bool:
     """
     py = _py_dir()
 
-    for alias in ("Anime-dowload.py", "Anime-download.py", "cochan.py"):
-        _rename_if_needed(py, alias, COCHAN_FILE)
-    for alias in ("coflix.py", "get.php"):
-        _rename_if_needed(py, alias, COFLIX_FILE)
     for alias in ("cotube.py", "youtube_downloader.py"):
         _rename_if_needed(py, alias, COTUBE_FILE)
-    for alias in ("CO-SAMA.py", "cosama.py"):
-        _rename_if_needed(py, alias, COSAMA_FILE)
+    for alias in ("coflix.py", "get.php"):
+        _rename_if_needed(py, alias, COFLIX_FILE)
 
     downloadable = [
-        ("Co-chan", os.path.join(py, COCHAN_FILE)),
-        ("Co-sama", os.path.join(py, COSAMA_FILE)),
         ("Co-tube", os.path.join(py, COTUBE_FILE)),
     ]
 
@@ -715,8 +705,6 @@ def _update_scripts() -> None:
     py = _py_dir()
 
     updatable = [
-        ("Co-chan",    URL_COCHAN, os.path.join(py, COCHAN_FILE)),
-        ("Co-sama",   URL_COSAMA, os.path.join(py, COSAMA_FILE)),
         ("Co-tube",   URL_COTUBE, os.path.join(py, COTUBE_FILE)),
     ]
 
@@ -731,7 +719,7 @@ def _update_scripts() -> None:
     )
     print(
         f"  {ConsoleUI.DIM}"
-        "Co-Menu.py se met a jour automatiquement au demarrage."
+        "Ney-Menu.py se met a jour automatiquement au demarrage."
         f"{ConsoleUI.RESET}"
     )
     print(ConsoleUI.CYAN + "  " + "=" * 58 + ConsoleUI.RESET + "\n")
@@ -765,10 +753,10 @@ def _update_scripts() -> None:
 
 
 # ══════════════════════════════════════════════════════════════════════════════
-#  Auto-mise à jour de Co-Menu.py au démarrage
+#  Auto-mise à jour de Ney-Menu.py au démarrage
 # ══════════════════════════════════════════════════════════════════════════════
 def _self_update() -> None:
-    """Télécharge TOUJOURS le contenu de Co-Menu.py depuis GitHub au démarrage.
+    """Télécharge TOUJOURS le contenu de Ney-Menu.py depuis GitHub au démarrage.
 
     Compare le contenu distant (hash SHA-256) avec le fichier local.
     Si identiques : on continue. Si différents : on écrase et on relance.
@@ -788,7 +776,7 @@ def _self_update() -> None:
     ConsoleUI.print_banner()
     print(
         f"\n  {ConsoleUI.CYAN}i  {ConsoleUI.RESET}"
-        "Vérification de Co-Menu.py depuis GitHub...\n"
+        "Vérification de Ney-Menu.py depuis GitHub...\n"
     )
 
     # ── Téléchargement complet du fichier distant ─────────────────────────────
@@ -796,7 +784,7 @@ def _self_update() -> None:
         # Paramètre aléatoire pour contourner le cache CDN de GitHub
         import random
         cache_bust = random.randint(100000, 999999)
-        url_nocache = f"{URL_COMENU}?cb={cache_bust}"
+        url_nocache = f"{URL_NEYMENU}&cb={cache_bust}"
         req = urllib.request.Request(
             url_nocache,
             headers={
@@ -836,7 +824,7 @@ def _self_update() -> None:
 
     if remote_hash == local_hash:
         ConsoleUI.success(
-            f"Co-Menu.py est à jour  "
+            f"Ney-Menu.py est à jour  "
             f"{ConsoleUI.DIM}({len(remote_content)} o){ConsoleUI.RESET}"
         )
         time.sleep(0.8)
@@ -860,7 +848,7 @@ def _self_update() -> None:
 
     print(
         f"\n  {ConsoleUI.GREEN}ok  {ConsoleUI.RESET}"
-        "Co-Menu.py mis à jour — relancement automatique...\n"
+        "Ney-Menu.py mis à jour — relancement automatique...\n"
     )
     time.sleep(1)
 
@@ -905,18 +893,6 @@ def launch_coflix() -> None:
     _cleanup_pycache()
 
 
-def launch_cochan() -> None:
-    """Lance Co-chan."""
-    _launch(COCHAN_FILE, "cochan")
-    _cleanup_pycache()
-
-
-def launch_cosama() -> None:
-    """Lance Co-sama."""
-    _launch(COSAMA_FILE, "cosama")
-    _cleanup_pycache()
-
-
 def launch_cotube() -> None:
     """Lance Co-tube."""
     _launch(COTUBE_FILE, "cotube")
@@ -931,7 +907,7 @@ def _goodbye() -> None:
     _cleanup_pycache()
     ConsoleUI.clear()
     print(ConsoleUI.CYAN + "\n  " + "=" * 58 + ConsoleUI.RESET)
-    print(f"  {ConsoleUI.CYAN}  Merci d'avoir utilise CO-MENU !{ConsoleUI.RESET}")
+    print(f"  {ConsoleUI.CYAN}  Merci d'avoir utilise NEY-MENU !{ConsoleUI.RESET}")
     print("     A bientot !")
     print(ConsoleUI.CYAN + "  " + "=" * 58 + ConsoleUI.RESET + "\n")
     time.sleep(1)
@@ -947,16 +923,16 @@ def _signal_handler(_sig: int, _frame: object) -> None:
 #  Point d'entree
 # ══════════════════════════════════════════════════════════════════════════════
 def main() -> None:
-    """Point d'entree principal de CO-MENU."""
+    """Point d'entree principal de NEY-MENU."""
     ConsoleUI.enable_ansi()
 
     if os.name == "nt":
-        os.system("title CO-MENU DOWNLOADER")
+        os.system("title NEY-MENU")
     elif _is_termux():
-        sys.stdout.write("\033]0;CO-MENU\007")
+        sys.stdout.write("\033]0;NEY-MENU\007")
         sys.stdout.flush()
 
-    # 0. Auto-mise à jour de Co-Menu.py (se relance si nouvelle version trouvée)
+    # 0. Auto-mise à jour de Ney-Menu.py (se relance si nouvelle version trouvée)
     _self_update()
 
     # 1. Installation des scripts manquants
@@ -967,31 +943,43 @@ def main() -> None:
 
     # 3. Menu principal (boucle)
     while True:
+        # Construction dynamique du menu selon la presence de Co-flix
+        coflix_present = os.path.isfile(os.path.join(_py_dir(), COFLIX_FILE))
+
+        options: list[str] = []
+        if coflix_present:
+            options.append("\U0001f3ac  Films / Series   (CO-FLIX)")
+        options.append("\U0001f534  YouTube          (NEY-TUBE)")
+        options.append("\u2b07\ufe0f   Mise a jour des scripts")
+        options.append("\u274c  Quitter")
+
         choice = ConsoleUI.navigate(
-            [
-                "\U0001f3ac  Films / Series   (CO-FLIX)",
-                "\U0001f338  Anime            (CO-CHAN)",
-                "\U0001f4d6  Scan / Manga     (CO-SAMA)",
-                "\U0001f534  YouTube          (CO-TUBE)",
-                "\u2b07\ufe0f   Mise a jour des scripts",
-                "\u274c  Quitter",
-            ],
+            options,
             "QUE VOULEZ-VOUS FAIRE ?",
             show_status=True,
         )
 
-        if choice == 0:
-            launch_coflix()
-        elif choice == 1:
-            launch_cochan()
-        elif choice == 2:
-            launch_cosama()
-        elif choice == 3:
-            launch_cotube()
-        elif choice == 4:
-            _update_scripts()
-        elif choice in (5, -1):
+        if choice == -1:
             _goodbye()
+
+        # Resolution de l'index selon la presence de Co-flix
+        idx = choice
+        if coflix_present:
+            if idx == 0:
+                launch_coflix()
+            elif idx == 1:
+                launch_cotube()
+            elif idx == 2:
+                _update_scripts()
+            elif idx == 3:
+                _goodbye()
+        else:
+            if idx == 0:
+                launch_cotube()
+            elif idx == 1:
+                _update_scripts()
+            elif idx == 2:
+                _goodbye()
 
 
 if __name__ == "__main__":
