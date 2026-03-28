@@ -19,7 +19,7 @@
 [![Plateforme](https://img.shields.io/badge/Plateforme-Windows%20|%20Android-green?style=for-the-badge&logo=windows)](https://github.com/Bicode-dev/Co-Menu/)
 [![Licence](https://img.shields.io/badge/Licence-CC%20BY--NC--ND%204.0-orange?style=for-the-badge)](https://creativecommons.org/licenses/by-nc-nd/4.0/)
 [![Discord](https://img.shields.io/badge/Discord-Rejoindre-7289DA?style=for-the-badge&logo=discord&logoColor=white)](https://discord.gg/cG6qSTSeUA)
-[![Télécharger](https://img.shields.io/badge/Télécharger-Co--Chan.exe-0078D6?style=for-the-badge&logo=windows&logoColor=white)](https://github.com/Bicode-dev/Co-Menu/releases/download/Co-Menu/Co-Menu.exe)
+[![Télécharger](https://img.shields.io/badge/Télécharger-Co--Menu.exe-0078D6?style=for-the-badge&logo=windows&logoColor=white)](https://github.com/Bicode-dev/Co-Menu/releases/download/Co-Menu/Co-Menu.exe)
 
 > *« Les droits humains compteront toujours plus que les droits d'auteur. »*
 > — Bicode-dev, 2026
