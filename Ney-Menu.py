@@ -76,13 +76,18 @@ def _py_dir() -> str:
     """Retourne le dossier de stockage des scripts enfants (créé si absent).
 
     - Windows          : %LOCALAPPDATA%\\Koyney\\Ney-Menu\\
-    - Linux/Mac/Termux : ~/.local/share/Koyney/Ney-Menu/
+    - Termux / Android : ~/.local/Koyney/Ney-Menu/
+    - Linux / macOS    : ~/.local/share/Koyney/Ney-Menu/
     """
     if os.name == "nt":
         local = os.environ.get("LOCALAPPDATA") or os.path.join(
             os.path.expanduser("~"), "AppData", "Local"
         )
         directory = os.path.join(local, "Koyney", "Ney-Menu")
+    elif _is_termux():
+        directory = os.path.join(
+            os.path.expanduser("~"), ".local", "Koyney", "Ney-Menu"
+        )
     else:
         directory = os.path.join(
             os.path.expanduser("~"), ".local", "share", "Koyney", "Ney-Menu"
