@@ -46,7 +46,7 @@ URL_NEYMENU = (
 )
 URL_COTUBE = (
     "https://raw.githubusercontent.com/Koyney/Ney-Tube"
-    "/refs/heads/main/Ney-Tube.py"
+    "/refs/heads/main/Ney-Tube.pyw"
 )
 
 COFLIX_FILE = "Co-flix.py"
