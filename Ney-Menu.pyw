@@ -825,14 +825,25 @@ def _self_update_console() -> None:
 # ── Lancement des scripts enfants (Termux — dans le même processus) ───────────
 def _launch(filename: str, module_name: str) -> None:
     """Charge et exécute le main() d'un script Python dans _py_dir() (Termux)."""
+    import importlib.machinery  # déjà dispo, import explicite pour clarté
+
     path = os.path.join(_py_dir(), filename)
     if not os.path.isfile(path):
         ConsoleUI.warn(f"{filename} introuvable dans : {_py_dir()}")
         time.sleep(2)
         return
-    spec   = importlib.util.spec_from_file_location(module_name, path)
-    module = importlib.util.module_from_spec(spec)  # type: ignore[arg-type]
-    spec.loader.exec_module(module)  # type: ignore[union-attr]
+
+    # ── Forcer SourceFileLoader pour les extensions non standard (.pyw) ──
+    loader = importlib.machinery.SourceFileLoader(module_name, path)
+    spec   = importlib.util.spec_from_loader(module_name, loader, origin=path)
+    if spec is None or spec.loader is None:
+        ConsoleUI.warn(f"Impossible de charger le module : {filename}")
+        time.sleep(2)
+        return
+
+    module = importlib.util.module_from_spec(spec)
+    sys.modules[module_name] = module          # enregistre le module
+    spec.loader.exec_module(module)            # type: ignore[union-attr]
     module.main()
 
 
