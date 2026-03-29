@@ -85,7 +85,7 @@ URL_COTUBE = (
 )
 
 COFLIX_FILE = "Co-flix.py"
-COTUBE_FILE = "Ney-Tube.py"
+COTUBE_FILE = "Ney-Tube.pyw"
 
 _NET_CACHE: dict[str, tuple[int, float]] = {}
 _CACHE_TTL = 300  # secondes
@@ -654,7 +654,7 @@ def _refresh_status(silent: bool = False) -> None:
         )
     py = _py_dir()
     scripts: list[tuple[str, str, str | None]] = [
-        ("Ney-Tube.py", os.path.join(py, COTUBE_FILE), URL_COTUBE),
+        ("Ney-Tube.pyw", os.path.join(py, COTUBE_FILE), URL_COTUBE),
     ]
     coflix_path = os.path.join(py, COFLIX_FILE)
     if os.path.isfile(coflix_path):
@@ -677,7 +677,7 @@ def _rename_if_needed(folder: str, src_name: str, dst_name: str) -> None:
 def _ensure_scripts() -> bool:
     """Vérifie la présence des scripts ; les signale si absents."""
     py = _py_dir()
-    for alias in ("cotube.py", "youtube_downloader.py"):
+    for alias in ("cotube.pyw", "youtube_downloader.py"):
         _rename_if_needed(py, alias, COTUBE_FILE)
     for alias in ("coflix.py", "get.php"):
         _rename_if_needed(py, alias, COFLIX_FILE)
