@@ -43,7 +43,6 @@ URL_COTUBE = (
     "/refs/heads/main/Ney-Tube.pyw"
 )
 
-COFLIX_FILE = "Co-flix.py"
 COTUBE_FILE = "Ney-Tube.pyw"
 
 _NET_CACHE: dict[str, tuple[int, float]] = {}
@@ -59,15 +58,6 @@ SCRIPTS: list[dict] = [
         "desc": "Téléchargeur de vidéos YouTube et plateformes supportées.",
         "file": COTUBE_FILE,
         "url":  URL_COTUBE,
-    },
-    {
-        "id":   "coflix",
-        "name": "Co-Flix",
-        "type": "script python",
-        "icon": "🎬",
-        "desc": "Visionneuse de films et séries. Fourni séparément.",
-        "file": COFLIX_FILE,
-        "url":  None,  # pas d'URL d'installation automatique
     },
 ]
 
@@ -223,11 +213,6 @@ def _launch(filename: str, module_name: str) -> None:
     sys.modules[module_name] = module
     spec.loader.exec_module(module)  # type: ignore[union-attr]
     module.main()
-
-
-def launch_coflix() -> None:
-    _launch(COFLIX_FILE, "coflix")
-    _cleanup_pycache()
 
 
 def launch_cotube() -> None:
@@ -507,25 +492,6 @@ ListItem.--highlight {
     margin-bottom: 3;
     display: none;
 }
-#btn-detail-action {
-    width: 100%;
-    height: 3;
-    background: #1a1a28;
-    color: #eaeaea;
-    border: tall #2e2e46;
-    text-align: center;
-    display: none;
-}
-#btn-detail-action:hover {
-    background: #263800;
-    border: tall #c6f135;
-    color: #c6f135;
-}
-#btn-detail-action:disabled {
-    background: #0c0c10;
-    color: #252538;
-    border: tall #141420;
-}
 
 /* ── Barre de progression ── */
 #progress {
@@ -597,7 +563,7 @@ class ScriptCard(ListItem):
 class NeyMenuApp(App):
     """NEY-MENU — Interface store de la Koyney Suite."""
 
-    TITLE    = "NEY-STORE"
+    TITLE    = "NEY-MENU"
     CSS      = _CSS
     BINDINGS = [
         ("ctrl+c", "quit_app",       "Quitter"),
@@ -629,7 +595,7 @@ class NeyMenuApp(App):
             # ── En-tête ──
             with Horizontal(id="store-header"):
                 yield Static(
-                    f"▲  [bold #c6f135]NEY-STORE[/]  [#2e2e44]│[/]  [#3a3a54]gestionnaire de scripts[/]",
+                    f"▲  [bold #c6f135]NEY-MENU[/]  [#2e2e44]│[/]  [#3a3a54]gestionnaire de scripts[/]",
                     id="header-left",
                     markup=True,
                 )
@@ -663,7 +629,7 @@ class NeyMenuApp(App):
                 with Vertical(id="detail-panel"):
                     with Horizontal(id="detail-tabs"):
                         yield Static("DÉTAIL",    id="tab-detail", classes="detail-tab tab-active")
-                        yield Static("NEY-STORE", id="tab-store",  classes="detail-tab")
+                        yield Static("NEY-MENU", id="tab-store",  classes="detail-tab")
 
                     with Vertical(id="detail-content"):
                         yield Static(
@@ -675,7 +641,6 @@ class NeyMenuApp(App):
                         yield Static("",  id="detail-type")
                         yield Static("",  id="detail-desc")
                         yield Static("",  id="detail-status")
-                        yield Button("",  id="btn-detail-action", disabled=True)
 
             # ── Barre de progression ──
             yield ProgressBar(total=100, show_eta=False, id="progress")
@@ -731,23 +696,7 @@ class NeyMenuApp(App):
         status_w.update(badge)
         status_w.styles.display = "block"
 
-        # Bouton action
-        btn = self.query_one("#btn-detail-action", Button)
-        btn.styles.display = "block"
-        self._refresh_detail_button(s, key)
-
-    def _refresh_detail_button(self, s: dict, key: str) -> None:
-        """Met à jour le label et l'état du bouton d'action selon le statut."""
-        btn = self.query_one("#btn-detail-action", Button)
-        if key == "ok":
-            btn.label   = "▶  LANCER"
-            btn.disabled = False
-        elif s["url"] and key in ("missing", "update", "unknown"):
-            btn.label   = "↓  INSTALLER / MÀJ"
-            btn.disabled = False
-        else:
-            btn.label   = "⊘  INDISPONIBLE"
-            btn.disabled = True
+        # Bouton action — supprimé (pas de bouton ouvrir/télécharger)
 
     # ── Événements ────────────────────────────────────────────────────────────
 
@@ -772,7 +721,7 @@ class NeyMenuApp(App):
         msg_w.update(f"  {msg}")
 
     def _set_buttons_enabled(self, enabled: bool) -> None:
-        for btn_id in ("btn-refresh", "btn-install", "btn-detail-action"):
+        for btn_id in ("btn-refresh", "btn-install"):
             try:
                 self.query_one(f"#{btn_id}", Button).disabled = not enabled
             except Exception:
@@ -797,7 +746,6 @@ class NeyMenuApp(App):
             if s:
                 try:
                     self.query_one("#detail-status", Static).update(badge)
-                    self._refresh_detail_button(s, key)
                 except Exception:
                     pass
 
@@ -910,8 +858,6 @@ class NeyMenuApp(App):
         # Renommages rétro-compatibles
         for alias in ("cotube.pyw", "youtube_downloader.py"):
             _rename_if_needed(py, alias, COTUBE_FILE)
-        for alias in ("coflix.py", "get.php"):
-            _rename_if_needed(py, alias, COFLIX_FILE)
 
         for s in SCRIPTS:
             path = os.path.join(py, s["file"])
@@ -975,38 +921,18 @@ class NeyMenuApp(App):
         self.query_one("#search-bar").remove_class("shown")
 
     @on(Button.Pressed, "#btn-install")
-    @on(Button.Pressed, "#btn-detail-action")
-    def _action_store_action(self, event: Button.Pressed) -> None:
-        """Installer ou lancer le script actuellement sélectionné."""
-        sid = self._selected_id
-        if sid is None:
-            self._log("Aucun script sélectionné.", "warn")
+    def _action_install_btn(self) -> None:
+        """Le bouton Installer ouvre directement Ney-Tube."""
+        path = os.path.join(_py_dir(), COTUBE_FILE)
+        if not os.path.isfile(path):
+            self._log("Ney-Tube introuvable. Vérifiez l'installation.", "warn")
             return
-
-        s = self._script_by_id(sid)
-        if s is None:
-            return
-
-        _, key = self._statuses.get(sid, ("", "unknown"))
-
-        if key == "ok":
-            # Lancer le script
-            path = os.path.join(_py_dir(), s["file"])
-            if not os.path.isfile(path):
-                self._log(f"{s['name']} introuvable.", "warn")
-                return
-            self._log(f"Lancement de {s['name']}…", "info")
-            if _TERMUX:
-                launch_fn = launch_cotube if sid == "neytube" else launch_coflix
-                with self.suspend():
-                    launch_fn()
-            else:
-                _open_in_terminal(path)
-        elif s["url"]:
-            # Installer / mettre à jour
-            self._worker_install_script(sid)
+        self._log("Lancement de Ney-Tube…", "info")
+        if _TERMUX:
+            with self.suspend():
+                launch_cotube()
         else:
-            self._log(f"{s['name']} ne peut pas être installé automatiquement.", "warn")
+            _open_in_terminal(path)
 
     def action_quit_app(self) -> None:
         _cleanup_pycache()
