@@ -37,7 +37,7 @@ VERSION = "3.0"
 # ── URLs ───────────────────────────────────────────────────────────────────────
 URL_NEYMENU = (
     "https://raw.githubusercontent.com/Koyney/Ney-Menu"
-    "/refs/heads/main/Ney-Menu.pyw"
+    "/refs/heads/main/Ney-Menu.py"
 )
 URL_COTUBE = (
     "https://raw.githubusercontent.com/Koyney/Ney-Tube"
