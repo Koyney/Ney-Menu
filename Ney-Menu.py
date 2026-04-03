@@ -767,4 +767,3 @@ if __name__ == "__main__":
         print(f"\nERREUR CRITIQUE : {_err}\n")
         traceback.print_exc()
         sys.exit(1)
-        
