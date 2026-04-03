@@ -493,6 +493,31 @@ ListItem.--highlight {
     display: none;
 }
 
+/* ── Boutons d'action du panneau détail ── */
+#btn-detail-download,
+#btn-detail-launch {
+    width: 100%;
+    height: 3;
+    background: #1a1a28;
+    color: #eaeaea;
+    border: tall #2e2e46;
+    text-align: center;
+    display: none;
+    margin-top: 1;
+}
+#btn-detail-download:hover,
+#btn-detail-launch:hover {
+    background: #263800;
+    border: tall #c6f135;
+    color: #c6f135;
+}
+#btn-detail-download:disabled,
+#btn-detail-launch:disabled {
+    background: #0c0c10;
+    color: #252538;
+    border: tall #141420;
+}
+
 /* ── Barre de progression ── */
 #progress {
     width: 100%;
@@ -628,8 +653,7 @@ class NeyMenuApp(App):
                 # Panneau droit — détail
                 with Vertical(id="detail-panel"):
                     with Horizontal(id="detail-tabs"):
-                        yield Static("DÉTAIL",    id="tab-detail", classes="detail-tab tab-active")
-                        yield Static("NEY-MENU", id="tab-store",  classes="detail-tab")
+                        yield Static("DÉTAIL", id="tab-detail", classes="detail-tab tab-active")
 
                     with Vertical(id="detail-content"):
                         yield Static(
@@ -641,6 +665,8 @@ class NeyMenuApp(App):
                         yield Static("",  id="detail-type")
                         yield Static("",  id="detail-desc")
                         yield Static("",  id="detail-status")
+                        yield Button("↓  TÉLÉCHARGER / MÀJ", id="btn-detail-download", disabled=True)
+                        yield Button("▶  LANCER",             id="btn-detail-launch",   disabled=True)
 
             # ── Barre de progression ──
             yield ProgressBar(total=100, show_eta=False, id="progress")
@@ -696,7 +722,19 @@ class NeyMenuApp(App):
         status_w.update(badge)
         status_w.styles.display = "block"
 
-        # Bouton action — supprimé (pas de bouton ouvrir/télécharger)
+        # Boutons télécharger / lancer
+        self._refresh_detail_buttons(s, key)
+
+    def _refresh_detail_buttons(self, s: dict, key: str) -> None:
+        """Affiche et met à jour l'état des boutons Télécharger et Lancer."""
+        dl  = self.query_one("#btn-detail-download", Button)
+        run = self.query_one("#btn-detail-launch",   Button)
+        dl.styles.display  = "block"
+        run.styles.display = "block"
+        # Télécharger : disponible si une URL existe
+        dl.disabled  = not bool(s.get("url"))
+        # Lancer : disponible uniquement si le fichier est présent
+        run.disabled = key not in ("ok", "update")
 
     # ── Événements ────────────────────────────────────────────────────────────
 
@@ -721,7 +759,7 @@ class NeyMenuApp(App):
         msg_w.update(f"  {msg}")
 
     def _set_buttons_enabled(self, enabled: bool) -> None:
-        for btn_id in ("btn-refresh", "btn-install"):
+        for btn_id in ("btn-refresh", "btn-install", "btn-detail-download", "btn-detail-launch"):
             try:
                 self.query_one(f"#{btn_id}", Button).disabled = not enabled
             except Exception:
@@ -746,6 +784,7 @@ class NeyMenuApp(App):
             if s:
                 try:
                     self.query_one("#detail-status", Static).update(badge)
+                    self._refresh_detail_buttons(s, key)
                 except Exception:
                     pass
 
@@ -920,19 +959,36 @@ class NeyMenuApp(App):
     def _action_close_search(self) -> None:
         self.query_one("#search-bar").remove_class("shown")
 
-    @on(Button.Pressed, "#btn-install")
-    def _action_install_btn(self) -> None:
-        """Le bouton Installer ouvre directement Ney-Tube."""
-        path = os.path.join(_py_dir(), COTUBE_FILE)
-        if not os.path.isfile(path):
-            self._log("Ney-Tube introuvable. Vérifiez l'installation.", "warn")
+    @on(Button.Pressed, "#btn-detail-download")
+    def _action_detail_download(self) -> None:
+        """Télécharge / met à jour le script sélectionné."""
+        sid = self._selected_id
+        if sid:
+            self._worker_install_script(sid)
+
+    @on(Button.Pressed, "#btn-detail-launch")
+    def _action_detail_launch(self) -> None:
+        """Lance le script sélectionné."""
+        sid = self._selected_id
+        if sid is None:
             return
-        self._log("Lancement de Ney-Tube…", "info")
+        s = self._script_by_id(sid)
+        if s is None:
+            return
+        path = os.path.join(_py_dir(), s["file"])
+        if not os.path.isfile(path):
+            self._log(f"{s['name']} introuvable.", "warn")
+            return
+        self._log(f"Lancement de {s['name']}…", "info")
         if _TERMUX:
             with self.suspend():
                 launch_cotube()
         else:
             _open_in_terminal(path)
+
+    @on(Button.Pressed, "#btn-install")
+    def _action_install_btn(self) -> None:
+        pass  # Comportement à définir ultérieurement
 
     def action_quit_app(self) -> None:
         _cleanup_pycache()
