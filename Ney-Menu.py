@@ -606,15 +606,6 @@ class NeyMenuApp(App):
     def compose(self) -> ComposeResult:
         with Vertical(id="main"):
 
-            # ── En-tête ──
-            with Horizontal(id="store-header"):
-                yield Static(
-                    f"▲  [bold #c6f135]NEY-MENU[/]",
-                    id="header-left",
-                    markup=True,
-                )
-                yield Static(f"0 / {len(SCRIPTS)} scripts", id="script-count")
-
             # ── Barre d'outils ──
             with Horizontal(id="store-toolbar"):
                 yield Button("⟳  Actualiser", id="btn-refresh",  classes="toolbar-btn")
@@ -789,11 +780,7 @@ class NeyMenuApp(App):
                     pass
 
     def _update_script_count(self) -> None:
-        installed = self._installed_count()
-        total     = len(SCRIPTS)
-        self.query_one("#script-count", Static).update(
-            f"{installed} / {total} script{'s' if total > 1 else ''}"
-        )
+        pass  # widget script-count supprimé
 
     def _show_progress(self, visible: bool) -> None:
         pb = self.query_one("#progress")
@@ -1000,6 +987,16 @@ class NeyMenuApp(App):
 # ══════════════════════════════════════════════════════════════════════════════
 
 def main() -> None:
+    # Renommer le titre de la fenêtre terminal
+    try:
+        if os.name == "nt":
+            import ctypes
+            ctypes.windll.kernel32.SetConsoleTitleW("Ney-Menu")
+        else:
+            sys.stdout.write("\033]0;Ney-Menu\007")
+            sys.stdout.flush()
+    except Exception:
+        pass
     app = NeyMenuApp()
     app.run()
 
