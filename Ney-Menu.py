@@ -51,6 +51,15 @@ _CACHE_TTL = 300
 # ── Registre des scripts de la suite ─────────────────────────────────────────
 SCRIPTS: list[dict] = [
     {
+        "id":   "neychan",
+        "name": "Ney-Chan",
+        "type": "Anime",
+        "icon": "▶",
+        "desc": "Téléchargeur d'animes",
+        "file": "Ney-Chan.py",
+        "url":  "https://raw.githubusercontent.com/Koyney/Ney-Chan/refs/heads/main/Ney-Chan.py",
+    },
+    {
         "id":   "neytube",
         "name": "Ney-Tube",
         "type": "Youtube",
@@ -283,17 +292,7 @@ Screen {
     color: #c6f135;
     border: none;
 }
-.toolbar-btn:focus   { border: none; color: #c6f135; background: transparent; }
-.toolbar-btn.-active { border: none; background: transparent; }
 .toolbar-btn:disabled { color: #222230; background: transparent; border: none; }
-
-/* Sélecteurs ID pour écraser le DEFAULT_CSS de Textual (Button:focus → $accent vert) */
-Button#btn-refresh:focus   { background: transparent; border: none; }
-Button#btn-refresh.-active { background: transparent; border: none; }
-Button#btn-install:focus   { background: transparent; border: none; }
-Button#btn-install.-active { background: transparent; border: none; }
-Button#btn-quit:focus      { background: transparent; border: none; }
-Button#btn-quit.-active    { background: transparent; border: none; }
 #toolbar-spacer   { width: 1fr; height: 3; }
 .toolbar-divider  { width: 1; height: 3; background: #1a1a26; }
 
@@ -337,15 +336,15 @@ ListView:focus          { border: none; }
 ListItem {
     background: #09090c;
     padding: 0;
-    height: 7;
+    height: 5;
     border-bottom: tall #0f0f13;
 }
 ListItem:hover        { background: #0f0f13; }
 ListItem.--highlight  { background: #111118; border-left: outer #c6f135; }
 
 /* Carte script dans la liste */
-.card-row  { padding: 1 2; height: 7; width: 100%; }
-.card-info { width: 1fr; height: 5; padding: 0 1; }
+.card-row  { padding: 1 2; height: 5; width: 100%; }
+.card-info { width: 1fr; height: 3; padding: 0 1; }
 .card-name { color: #e0e0e0; text-style: bold; width: 100%; }
 .card-type { color: #3a3a54; width: 100%; }
 .card-chip { width: auto; content-align: right middle; color: #3a3a54; height: 5; padding: 0 1; }
@@ -445,6 +444,23 @@ ProgressBar > .bar--indeterminate{ color: #c6f135; }
 
 # ── Carte de script ───────────────────────────────────────────────────────────
 
+# ── Bouton toolbar sans fond vert sur focus/active ────────────────────────────
+
+class ToolbarButton(Button):
+    """can_focus=False → jamais de :focus vert.
+    on_mouse_down/up  → style inline transparent pour écraser .-active vert."""
+
+    can_focus = False
+
+    def on_mouse_down(self) -> None:
+        self.styles.background = "transparent"
+
+    def on_mouse_up(self) -> None:
+        self.styles.background = "transparent"
+
+
+# ── Carte de script ───────────────────────────────────────────────────────────
+
 class ScriptCard(ListItem):
     """Élément de la liste des scripts dans le store."""
 
@@ -497,17 +513,17 @@ class NeyMenuApp(App):
 
             # ── Barre d'outils ──
             with Horizontal(id="store-toolbar"):
-                yield Button("⟳  Actualiser", id="btn-refresh",  classes="toolbar-btn")
-                yield Static("",              classes="toolbar-divider")
-                yield Button("↓  Installer",  id="btn-install",  classes="toolbar-btn")
-                yield Static("",              id="toolbar-spacer")
-                yield Button("✕  Quitter",    id="btn-quit",     classes="toolbar-btn")
+                yield ToolbarButton("⟳  Actualiser", id="btn-refresh",  classes="toolbar-btn")
+                yield Static("",                     classes="toolbar-divider")
+                yield ToolbarButton("↓  Installer",  id="btn-install",  classes="toolbar-btn")
+                yield Static("",                     id="toolbar-spacer")
+                yield ToolbarButton("✕  Quitter",    id="btn-quit",     classes="toolbar-btn")
 
             # ── Barre de recherche (Ctrl+F) ──
             with Horizontal(id="search-bar"):
                 yield Static("⊕ ", id="search-icon")
                 yield Input(placeholder="Rechercher un script…", id="search-input")
-                yield Button("✕", id="btn-search-close", classes="toolbar-btn")
+                yield ToolbarButton("✕", id="btn-search-close", classes="toolbar-btn")
 
             # ── Corps principal ──
             with Horizontal(id="store-body"):
