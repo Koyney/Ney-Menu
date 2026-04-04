@@ -251,16 +251,9 @@ Screen {
     width: 1fr;
     content-align: left middle;
 }
-#header-brand {
-    color: #c6f135;
-    text-style: bold;
-}
-#header-pipe {
-    color: #2e2e44;
-}
-#header-sub {
-    color: #3a3a54;
-}
+#header-brand { color: #c6f135; text-style: bold; }
+#header-pipe  { color: #2e2e44; }
+#header-sub   { color: #3a3a54; }
 #script-count {
     color: #3a3a54;
     width: auto;
@@ -291,24 +284,19 @@ Screen {
     background: #111118;
     border: none;
 }
-.toolbar-btn:focus {
-    border: none;
-    color: #c6f135;
-}
-.toolbar-btn:disabled {
-    color: #222230;
-    background: transparent;
-    border: none;
-}
-#toolbar-spacer {
-    width: 1fr;
-    height: 3;
-}
-.toolbar-divider {
-    width: 1;
-    height: 3;
-    background: #1a1a26;
-}
+.toolbar-btn:focus   { border: none; color: #c6f135; background: transparent; }
+.toolbar-btn.-active { border: none; background: transparent; }
+.toolbar-btn:disabled { color: #222230; background: transparent; border: none; }
+
+/* Sélecteurs ID pour écraser le DEFAULT_CSS de Textual (Button:focus → $accent vert) */
+Button#btn-refresh:focus   { background: transparent; border: none; }
+Button#btn-refresh.-active { background: transparent; border: none; }
+Button#btn-install:focus   { background: transparent; border: none; }
+Button#btn-install.-active { background: transparent; border: none; }
+Button#btn-quit:focus      { background: transparent; border: none; }
+Button#btn-quit.-active    { background: transparent; border: none; }
+#toolbar-spacer   { width: 1fr; height: 3; }
+.toolbar-divider  { width: 1; height: 3; background: #1a1a26; }
 
 /* ── Barre de recherche ── */
 #search-bar {
@@ -318,14 +306,8 @@ Screen {
     padding: 0 2;
     display: none;
 }
-#search-bar.shown {
-    display: block;
-}
-#search-icon {
-    color: #3a3a54;
-    width: 3;
-    content-align: left middle;
-}
+#search-bar.shown { display: block; }
+#search-icon { color: #3a3a54; width: 3; content-align: left middle; }
 Input {
     background: transparent;
     border: none;
@@ -333,15 +315,10 @@ Input {
     width: 1fr;
     padding: 0 1;
 }
-Input:focus {
-    border: none;
-}
+Input:focus { border: none; }
 
 /* ── Corps (split gauche/droite) ── */
-#store-body {
-    height: 1fr;
-    width: 100%;
-}
+#store-body { height: 1fr; width: 100%; }
 
 /* ── Liste des scripts (gauche) ── */
 #script-list {
@@ -356,53 +333,23 @@ ListView {
     padding: 0;
     height: 100%;
 }
-ListView > .--highlight {
-    background: #111118;
-}
-ListView:focus {
-    border: none;
-}
+ListView > .--highlight { background: #111118; }
+ListView:focus          { border: none; }
 ListItem {
     background: #09090c;
     padding: 0;
     height: 7;
     border-bottom: tall #0f0f13;
 }
-ListItem:hover {
-    background: #0f0f13;
-}
-ListItem.--highlight {
-    background: #111118;
-    border-left: outer #c6f135;
-}
+ListItem:hover        { background: #0f0f13; }
+ListItem.--highlight  { background: #111118; border-left: outer #c6f135; }
 
 /* Carte script dans la liste */
-.card-row {
-    padding: 1 2;
-    height: 7;
-    width: 100%;
-}
-.card-info {
-    width: 1fr;
-    height: 5;
-    padding: 0 1;
-}
-.card-name {
-    color: #e0e0e0;
-    text-style: bold;
-    width: 100%;
-}
-.card-type {
-    color: #3a3a54;
-    width: 100%;
-}
-.card-chip {
-    width: auto;
-    content-align: right middle;
-    color: #3a3a54;
-    height: 5;
-    padding: 0 1;
-}
+.card-row  { padding: 1 2; height: 7; width: 100%; }
+.card-info { width: 1fr; height: 5; padding: 0 1; }
+.card-name { color: #e0e0e0; text-style: bold; width: 100%; }
+.card-type { color: #3a3a54; width: 100%; }
+.card-chip { width: auto; content-align: right middle; color: #3a3a54; height: 5; padding: 0 1; }
 
 /* Couleurs des badges */
 .chip-ok      { color: #4cd97b; }
@@ -411,65 +358,16 @@ ListItem.--highlight {
 .chip-unknown { color: #3a3a54; }
 
 /* ── Panneau de détail (droite) ── */
-#detail-panel {
-    width: 3fr;
-    height: 100%;
-    background: #0f0f13;
-}
-#detail-tabs {
-    height: 3;
-    border-bottom: tall #1a1a26;
-    background: #0c0c10;
-    padding: 0 2;
-}
-.detail-tab {
-    width: auto;
-    content-align: left middle;
-    color: #3a3a54;
-    padding: 0 2;
-    text-style: bold;
-    height: 3;
-}
-.detail-tab.tab-active {
-    color: #eaeaea;
-}
-#detail-content {
-    padding: 3 4;
-    height: 1fr;
-    width: 100%;
-}
-#detail-empty {
-    color: #252538;
-    content-align: center middle;
-    width: 100%;
-    height: 100%;
-    text-align: center;
-}
-#detail-name {
-    color: #eaeaea;
-    text-style: bold;
-    width: 100%;
-    margin-bottom: 0;
-    display: none;
-}
-#detail-type {
-    color: #3a3a54;
-    width: 100%;
-    margin-bottom: 2;
-    display: none;
-}
-#detail-desc {
-    color: #9a9ab8;
-    width: 100%;
-    margin-bottom: 2;
-    display: none;
-}
-#detail-status {
-    color: #3a3a54;
-    width: 100%;
-    margin-bottom: 3;
-    display: none;
-}
+#detail-panel  { width: 3fr; height: 100%; background: #0f0f13; }
+#detail-tabs   { height: 3; border-bottom: tall #1a1a26; background: #0c0c10; padding: 0 2; }
+.detail-tab    { width: auto; content-align: left middle; color: #3a3a54; padding: 0 2; text-style: bold; height: 3; }
+.detail-tab.tab-active { color: #eaeaea; }
+#detail-content { padding: 3 4; height: 1fr; width: 100%; }
+#detail-empty  { color: #252538; content-align: center middle; width: 100%; height: 100%; text-align: center; }
+#detail-name   { color: #eaeaea; text-style: bold; width: 100%; margin-bottom: 0; display: none; }
+#detail-type   { color: #3a3a54; width: 100%; margin-bottom: 2; display: none; }
+#detail-desc   { color: #9a9ab8; width: 100%; margin-bottom: 2; display: none; }
+#detail-status { color: #3a3a54; width: 100%; margin-bottom: 3; display: none; }
 
 /* ── Conteneur fixe des boutons d'action ── */
 #detail-actions {
@@ -479,54 +377,58 @@ ListItem.--highlight {
     border-top: tall #1a1a26;
     display: none;
 }
-#detail-actions.shown {
-    display: block;
-}
+#detail-actions.shown { display: block; }
 
-/* ── Boutons d'action du panneau détail ── */
-#btn-detail-download,
+/* ── Bouton LANCER (vert) ── */
 #btn-detail-launch {
     width: 100%;
     height: 3;
-    background: #1a1a28;
-    color: #eaeaea;
-    border: tall #2e2e46;
+    background: #042010;
+    color: #4cd97b;
+    border: tall #4cd97b;
     text-align: center;
     display: none;
     margin-bottom: 1;
 }
-#btn-detail-download:hover,
 #btn-detail-launch:hover {
-    background: #263800;
-    border: tall #c6f135;
-    color: #c6f135;
+    background: #073d1e;
+    border: tall #4cd97b;
+    color: #ffffff;
 }
-#btn-detail-download:disabled,
 #btn-detail-launch:disabled {
     background: #0c0c10;
-    color: #252538;
-    border: tall #141420;
+    color: #1a3a20;
+    border: tall #1a3a20;
+}
+
+/* ── Bouton TÉLÉCHARGER / MÀJ (orange) ── */
+#btn-detail-download {
+    width: 100%;
+    height: 3;
+    background: #1a0e00;
+    color: #f5a623;
+    border: tall #f5a623;
+    text-align: center;
+    display: none;
+    margin-bottom: 1;
+}
+#btn-detail-download:hover {
+    background: #331c00;
+    border: tall #f5a623;
+    color: #ffffff;
+}
+#btn-detail-download:disabled {
+    background: #0c0c10;
+    color: #2a1a00;
+    border: tall #2a1a00;
 }
 
 /* ── Barre de progression ── */
-#progress {
-    width: 100%;
-    height: 1;
-    display: none;
-}
-#progress.shown {
-    display: block;
-}
-ProgressBar > .bar--bar {
-    color: #c6f135;
-    background: #1f1f30;
-}
-ProgressBar > .bar--complete {
-    color: #c6f135;
-}
-ProgressBar > .bar--indeterminate {
-    color: #c6f135;
-}
+#progress { width: 100%; height: 1; display: none; }
+#progress.shown { display: block; }
+ProgressBar > .bar--bar          { color: #c6f135; background: #1f1f30; }
+ProgressBar > .bar--complete     { color: #c6f135; }
+ProgressBar > .bar--indeterminate{ color: #c6f135; }
 
 /* ── Pied de page (log) ── */
 #footer {
@@ -536,21 +438,9 @@ ProgressBar > .bar--indeterminate {
     padding: 0 2;
     width: 100%;
 }
-#log-dot {
-    width: 2;
-    color: #4a4a60;
-    content-align: left middle;
-}
-#log-msg {
-    width: 1fr;
-    color: #4a4a60;
-    content-align: left middle;
-}
-#log-ver {
-    width: auto;
-    color: #252538;
-    content-align: right middle;
-}
+#log-dot { width: 2; color: #4a4a60; content-align: left middle; }
+#log-msg { width: 1fr; color: #4a4a60; content-align: left middle; }
+#log-ver { width: auto; color: #252538; content-align: right middle; }
 """
 
 
@@ -633,7 +523,7 @@ class NeyMenuApp(App):
                 # Panneau droit — détail
                 with Vertical(id="detail-panel"):
                     with Horizontal(id="detail-tabs"):
-                        yield Static("DÉTAIL", id="tab-detail", classes="detail-tab tab-active")
+                        yield Static("DÉTAILS", id="tab-detail", classes="detail-tab tab-active")
 
                     with Vertical(id="detail-content"):
                         yield Static(
@@ -662,6 +552,11 @@ class NeyMenuApp(App):
 
     def on_mount(self) -> None:
         self._set_buttons_enabled(False)
+        # Forcer le focus sur la liste pour éviter que btn-quit soit focalisé par défaut
+        try:
+            self.query_one("#script-listview", ListView).focus()
+        except Exception:
+            pass
         self._worker_self_update()
         
 
